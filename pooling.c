@@ -47,6 +47,7 @@ void process(char* input_filename, char* output_filename,char* threads)
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
 
+    	// add a bit vector or boolean vector to make sure we don't calculate that region??
 
     	// get all adjacent squares
     	int main = 4*width*i + 4*j;
