@@ -8,8 +8,20 @@
 #include "lodepng.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "omp.h"
 
-void process(char* input_filename, char* output_filename)
+
+void rec(int pixel,int address,unsigned char * new_image) {
+	if (pixel<127) {
+		new_image[address]=127;
+	}
+	else{
+		new_image[address]=pixel;
+	}
+}
+
+
+void process(char* input_filename, char* output_filename,char* threads)
 {
   unsigned error;
   unsigned char *image, *new_image;
@@ -21,15 +33,19 @@ void process(char* input_filename, char* output_filename)
 
   // process image
   unsigned char value;
+
+#pragma omp parallel for num_threads(atoi(threads)) collapse(2)
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-
-    	value = image[4*width*i + 4*j];
-
-	    new_image[4*width*i + 4*j + 0] = value; // R
-	    new_image[4*width*i + 4*j + 1] = value; // G
-	    new_image[4*width*i + 4*j + 2] = value; // B
-	    new_image[4*width*i + 4*j + 3] = image[4*width*i + 4*j + 3]; // A
+    	int offset = 4*width*i + 4*j;
+	    int r =image[offset + 0]; // R
+	    rec(r,(offset + 0),new_image);
+	    int g =image[offset + 1]; // G
+	    rec(g,offset+1,new_image);
+	    int b =image[offset + 2]; // B
+	    rec(b,offset+2,new_image);
+	    int a = image[offset + 3]; // A
+	    new_image[offset + 3]=a;
     }
   }
 
@@ -44,7 +60,7 @@ int main(int argc, char *argv[])
   char* input_filename = argv[1];
   char* output_filename = argv[2];
 
-  process(input_filename, output_filename);
+  process(input_filename, output_filename,argv[2]);
 
   return 0;
 }
