@@ -35,17 +35,23 @@ void process(char* input_filename, char* output_filename,char* threads)
   unsigned char *image, *new_image;
   unsigned width, height;
 
+
   error = lodepng_decode32_file(&image, &width, &height, input_filename);
+  unsigned char *keepTrack = (unsigned char *)malloc(width*height*4*sizeof(unsigned char));
+
   if(error) printf("error %u: %s\n", error, lodepng_error_text(error));
   new_image = malloc(width * height * 4 * sizeof(unsigned char));
+
+   memcpy(keepTrack, image, strlen(new_image)+1);
 
   // process image
   unsigned char value;
 
 //omp_set_num_threads(atoi(threads));
 //#pragma omp parallel for collapse(2)
-  for (int i = 0; i < height; i++) {
-    for (int j = 0; j < width; j++) {
+  for (int i = 0; i < height; i+=2) {
+    for (int j = 0; j < width; j+=2) {
+
 
     	// add a bit vector or boolean vector to make sure we don't calculate that region??
 
@@ -55,18 +61,19 @@ void process(char* input_filename, char* output_filename,char* threads)
 		int right = 4*width*i + 4*(j+1);
 		int diagonal = 4*width*(i+1) + 4*(j+1);
 
+
+
 		int maxR = max( max(image[main], image[down]), max(image[right], image[diagonal]));
-		int maxB = max( max(image[main+1], image[down+1]), max(image[right+1], image[diagonal+1]));
-		int maxG = max( max(image[main+2], image[down+2]), max(image[right+2], image[diagonal+2] ));
+		int maxG = max( max(image[main+1], image[down+1]), max(image[right+1], image[diagonal+1]));
+		int maxB = max( max(image[main+2], image[down+2]), max(image[right+2], image[diagonal+2] ));
 
 
 		// how do we know how to shrink the original image?
-		new_image[main] = maxR;
-		new_image[main+1] = maxB;
-		new_image[main+2] = maxG;
-		new_image[main+3] = 255;
+		new_image[4*width*i + 4*j] = maxR;
+		new_image[(4*width*i + (4*j)) + 1] = maxG;
+		new_image[(4*width*i + (4*j)) + 2] = maxB;
+//		new_image[main+3] = 255;
 
-//		new_image[4*width*(i-1) + 4*j] = max(max(main, down), max (right, diagonal));
 //	    int r = image[offset + 0]; // R
 //	    rec(r,(offset + 0),new_image);
 //	    int g =image[offset + 1]; // G
