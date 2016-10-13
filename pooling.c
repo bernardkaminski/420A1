@@ -24,12 +24,7 @@ int max(int num1, int num2)
 
 
 
-void pool(int pixel,int address,unsigned char * new_image) {
-
-}
-
-
-void process(char* input_filename, char* output_filename,char* threads)
+void pool(char* input_filename, char* output_filename,char* threads)
 {
   unsigned error;
   unsigned char *image, *new_image;
@@ -44,41 +39,24 @@ void process(char* input_filename, char* output_filename,char* threads)
   // process image
   unsigned char value;
 
-//omp_set_num_threads(atoi(threads));
-//#pragma omp parallel for collapse(2)
+omp_set_num_threads(atoi(threads));
+#pragma omp parallel for collapse(2)
   for (int i = 0; i < height; i+=2) {
     for (int j = 0; j < width; j+=2) {
-
-
-    	// add a bit vector or boolean vector to make sure we don't calculate that region??
-
     	// get all adjacent squares
     	int main = 4*width*i + 4*j;
     	int down = 4*width*(i+1) + 4*j;
 		int right = 4*width*i + 4*(j+1);
 		int diagonal = 4*width*(i+1) + 4*(j+1);
 
-
-
 		int maxR = max( max(image[main], image[down]), max(image[right], image[diagonal]));
 		int maxG = max( max(image[main+1], image[down+1]), max(image[right+1], image[diagonal+1]));
 		int maxB = max( max(image[main+2], image[down+2]), max(image[right+2], image[diagonal+2] ));
 
-//
-//		// how do we know how to shrink the original image?
-		new_image[width*i + j/2] = maxR;
-		new_image[(width*i + j/2) + 1] = maxG;
-		new_image[(width*i + j/2) + 2] = maxB;
-		new_image[(width*i + j/2) + 3] = 255;
-
-//	    int r = image[offset + 0]; // R
-//	    rec(r,(offset + 0),new_image);
-//	    int g =image[offset + 1]; // G
-//	    rec(g,offset+1,new_image);
-//	    int b =image[offset + 2]; // B
-//	    rec(b,offset+2,new_image);
-//	    int four = image[offset + 3]; // A
-//	    new_image[offset + 3]=r;
+		new_image[width*i + j*2] = maxR;
+		new_image[(width*i + j*2) + 1] = maxG;
+		new_image[(width*i + j*2) + 2] = maxB;
+		new_image[(width*i + j*2) + 3] = 255;
     }
   }
 
@@ -94,7 +72,7 @@ int main(int argc, char *argv[])
   char* input_filename = argv[1];
   char* output_filename = argv[2];
 
-  process(input_filename, output_filename,argv[3]);
+  pool(input_filename, output_filename,argv[3]);
 
   return 0;
 }
