@@ -37,12 +37,9 @@ void process(char* input_filename, char* output_filename,char* threads)
 
 
   error = lodepng_decode32_file(&image, &width, &height, input_filename);
-  unsigned char *keepTrack = (unsigned char *)malloc(width*height*4*sizeof(unsigned char));
 
   if(error) printf("error %u: %s\n", error, lodepng_error_text(error));
-  new_image = malloc(width * height * 4 * sizeof(unsigned char));
-
-   memcpy(keepTrack, image, strlen(new_image)+1);
+  new_image = malloc(width * height * sizeof(unsigned char));
 
   // process image
   unsigned char value;
@@ -67,12 +64,12 @@ void process(char* input_filename, char* output_filename,char* threads)
 		int maxG = max( max(image[main+1], image[down+1]), max(image[right+1], image[diagonal+1]));
 		int maxB = max( max(image[main+2], image[down+2]), max(image[right+2], image[diagonal+2] ));
 
-
-		// how do we know how to shrink the original image?
-		new_image[4*width*i + 4*j] = maxR;
-		new_image[(4*width*i + (4*j)) + 1] = maxG;
-		new_image[(4*width*i + (4*j)) + 2] = maxB;
-//		new_image[main+3] = 255;
+//
+//		// how do we know how to shrink the original image?
+		new_image[width*i + j/2] = maxR;
+		new_image[(width*i + j/2) + 1] = maxG;
+		new_image[(width*i + j/2) + 2] = maxB;
+		new_image[(width*i + j/2) + 3] = 255;
 
 //	    int r = image[offset + 0]; // R
 //	    rec(r,(offset + 0),new_image);
