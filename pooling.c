@@ -5,7 +5,6 @@
 #include "omp.h"
 #include <math.h>
 
-//	#define max(a,b) ((a) > (b) ? (a) : (b))
 
 int max(int num1, int num2)
 {
