@@ -37,42 +37,36 @@ void convolution(char* input_filename, char* output_filename, char* threads)
 
 	if (error)
 		printf("error %u: %s\n", error, lodepng_error_text(error));
-	new_image = malloc(width * height * 4 * sizeof(unsigned char));
+	new_image = malloc((width-2) * (height-2) * 4 * sizeof(unsigned char));
 
 //omp_set_num_threads(atoi(threads));
 //#pragma omp parallel for collapse(2)
-	for (int i = 0; i < height; i++)
+	for (int i = 1; i < height - 1; i++)
 	{
-		for (int j = 0; j < width; j++)
+		for (int j = 1; j < width - 1; j++)
 		{
-			int sumR = 0;
-			int sumG = 0;
-			int sumB = 0;
-			int sumA = 0;
-
-			int offset = 4 * width * i + 4 * j;
+			int offset = 4 * width * (i - 1) + 4 * (j - 1);
+			int outputOffset = 4 * (width - 2) * (i - 1) + 4 * (j - 1);
 			// multiply weight matrix with submatrix of image
-			for (int ii = 0; ii <= 2; ii++)
+			for (int idx = 0; idx <= 2; idx++)
 			{
-				for (int jj = 0; jj <= 2; jj++)
+				int sum = 0;
+
+				for (int x = 0; x <= 2; x++)
 				{
-					int newOffset = offset + 4*jj + 4*ii;
-					int inputR = image[newOffset];
-					int inputG = image[newOffset+1];
-					int inputB = image[newOffset+2];
+					for (int y = 0; y <= 2; y++)
+					{
+						int imageOffset = offset + 4 * width * x + 4 * y + idx;
+						int inputPixel = image[imageOffset];
 
-					int weight = w[ii][jj];
-					sumR += (inputR * weight);
-					sumG += (inputG * weight);
-					sumB += (inputB * weight);
+						int weight = w[x][y];
+						sum += (inputPixel * weight);
+					}
 				}
+				// can't wrap my head around this setting stuff
+				new_image[outputOffset + idx] = constrain(sum, 0, 255);
 			}
-
-			// can't wrap my head around this setting stuff
-			new_image[4*width*i + 4*j] = constrain(sumR, 0, 255);
-			new_image[4*width*i + 4*j + 1] = constrain(sumG, 0, 255);
-			new_image[4*width*i + 4*j + 2] = constrain(sumB, 0, 255);
-			new_image[4*width*i + 4*j + 3] = 255;
+			new_image[outputOffset + 3] = image[offset+3];
 		}
 	}
 
