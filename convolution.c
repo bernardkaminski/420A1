@@ -39,8 +39,8 @@ void convolution(char* input_filename, char* output_filename, char* threads)
 		printf("error %u: %s\n", error, lodepng_error_text(error));
 	new_image = malloc((width-2) * (height-2) * 4 * sizeof(unsigned char));
 
-//omp_set_num_threads(atoi(threads));
-//#pragma omp parallel for collapse(2)
+omp_set_num_threads(atoi(threads));
+#pragma omp parallel for collapse(2)
 	for (int i = 1; i < height - 1; i++)
 	{
 		for (int j = 1; j < width - 1; j++)
@@ -52,6 +52,8 @@ void convolution(char* input_filename, char* output_filename, char* threads)
 			int sumg = 0;
 			int sumb = 0;
 			int suma = 255;
+			// omp_set_num_threads(atoi(threads));
+			// #pragma omp parallel for collapse(2)
 			for (int x = 0; x <= 2; x++)
 			{
 				for (int y = 0; y <= 2; y++)
