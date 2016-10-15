@@ -45,28 +45,30 @@ void convolution(char* input_filename, char* output_filename, char* threads)
 	{
 		for (int j = 1; j < width - 1; j++)
 		{
-			int offset = 4 * width * (i - 1) + 4 * (j - 1);
+			int offset = 4 * width * (i -1) + 4 * (j - 1);
 			int outputOffset = 4 * (width - 2) * (i - 1) + 4 * (j - 1);
-			// multiply weight matrix with submatrix of image
-			for (int idx = 0; idx <= 2; idx++)
+			
+			int sumr = 0;
+			int sumg = 0;
+			int sumb = 0;
+			int suma = 255;
+			for (int x = 0; x <= 2; x++)
 			{
-				int sum = 0;
-
-				for (int x = 0; x <= 2; x++)
+				for (int y = 0; y <= 2; y++)
 				{
-					for (int y = 0; y <= 2; y++)
-					{
-						int imageOffset = offset + 4 * width * x + 4 * y + idx;
-						int inputPixel = image[imageOffset];
-
-						int weight = w[x][y];
-						sum += (inputPixel * weight);
-					}
+					//get pixel 
+					sumr += image[offset+4*width *x+y*4]*w[x][y];
+					sumg += image[offset+4*width *x+y*4+1]*w[x][y];
+					sumb += image[offset+4*width *x+y*4+2]*w[x][y];
+					//suma += image[offset+4*width *x+y*4+3]*w[x][y];
 				}
-				// can't wrap my head around this setting stuff
-				new_image[outputOffset + idx] = constrain(sum, 0, 255);
 			}
-			new_image[outputOffset + 3] = image[offset+3];
+		
+
+			new_image[outputOffset] = constrain(sumr,0,255);
+			new_image[outputOffset+1] = constrain(sumg,0,255);
+			new_image[outputOffset+2] = constrain(sumb,0,255);
+			new_image[outputOffset+3] = constrain(suma,0,255);
 		}
 	}
 
